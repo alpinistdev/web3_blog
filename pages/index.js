@@ -1,118 +1,147 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+/* pages/index.js */
+import { css } from "@emotion/css";
+import { useContext } from "react";
+import { useRouter } from "next/router";
+import { ethers } from "ethers";
+import Link from "next/link";
+import { AccountContext } from "../context";
 
-const inter = Inter({ subsets: ['latin'] })
+/* import contract address and contract owner address */
+import { contractAddress, ownerAddress } from "../config";
 
-export default function Home() {
+/* import Application Binary Interface (ABI) */
+import Blog from "../artifacts/contracts/Blog.sol/Blog.json";
+
+export default function Home(props) {
+  /* posts are fetched server side and passed in as props */
+  /* see getServerSideProps */
+  const { posts } = props;
+  const account = useContext(AccountContext);
+
+  const router = useRouter();
+  async function navigate() {
+    router.push("/create-post");
+  }
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div>
+      <div className={postList}>
+        {
+          /* map over the posts array and render a button with the post title */
+          posts?.map((post, index) => (
+            <Link href={`/post/${post[2]}`} key={index}>
+              <div className={linkStyle}>
+                <p className={postTitle}>{post[1]}</p>
+                <div className={arrowContainer}>
+                  <img
+                    src="/right-arrow.svg"
+                    alt="Right arrow"
+                    className={smallArrow}
+                  />
+                </div>
+              </div>
+            </Link>
+          ))
+        }
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className={container}>
+        {account === ownerAddress && posts && !posts.length && (
+          /* if the signed in user is the account owner, render a button */
+          /* to create the first post */
+          <button className={buttonStyle} onClick={navigate}>
+            Create your first post
+            <img src="/right-arrow.svg" alt="Right arrow" className={arrow} />
+          </button>
+        )}
       </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </div>
+  );
 }
+
+export async function getServerSideProps() {
+  /* here we check to see the current environment variable */
+  /* and render a provider based on the environment we're in */
+  let provider;
+  if (process.env.ENVIRONMENT === "local") {
+    provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+  } else if (process.env.ENVIRONMENT === "testnet") {
+    provider = new ethers.providers.JsonRpcProvider(
+      "https://rpc-mumbai.matic.today"
+    );
+  } else {
+    provider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com/");
+  }
+
+  const contract = new ethers.Contract(contractAddress, Blog.abi, provider);
+
+  try {
+    const data = await contract.fetchPosts();
+    console.log("data", data);
+    return {
+      props: {
+        posts: JSON.parse(JSON.stringify(data)),
+      },
+    };
+  } catch (e) {
+    console.log("Plese connect Metamask!");
+    return {
+      props: {
+        posts: [],
+      },
+    };
+  }
+}
+
+const arrowContainer = css`
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  padding-right: 20px;
+`;
+
+const postTitle = css`
+  font-size: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0;
+  padding: 20px;
+`;
+
+const linkStyle = css`
+  border: 1px solid #ddd;
+  margin-top: 20px;
+  border-radius: 8px;
+  display: flex;
+`;
+
+const postList = css`
+  width: 700px;
+  margin: 0 auto;
+  padding-top: 50px;
+`;
+
+const container = css`
+  display: flex;
+  justify-content: center;
+`;
+
+const buttonStyle = css`
+  margin-top: 100px;
+  background-color: #fafafa;
+  outline: none;
+  border: none;
+  font-size: 44px;
+  padding: 20px 70px;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 7px 7px rgba(0, 0, 0, 0.1);
+`;
+
+const arrow = css`
+  width: 35px;
+  margin-left: 30px;
+`;
+
+const smallArrow = css`
+  width: 25px;
+`;
